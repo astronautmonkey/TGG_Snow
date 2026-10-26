@@ -655,7 +655,7 @@ function render(){
   // depth
   [].forEach.call($('depthSeg').children, function(b){ b.setAttribute('aria-pressed', String(b.dataset.depth === L.depth)); });
   var dd = S.days[S.routeId];
-  $('depthNote').textContent = dd && dd.depth ? 'Set by ' + dd.by + ' at ' + clock(dd.at) : 'Shared with the whole crew';
+  $('depthNote').innerHTML = dd && dd.depth ? 'Set by ' + esc(dd.by) + ' at ' + clock(dd.at) + ' · <button type="button" class="link-btn" id="clearDepth" style="padding:0">Clear</button>' : 'Shared with the whole crew';
 
   // tabs
   $('nToday').textContent = L.today.length; $('nCall').textContent = L.call.length; $('nAll').textContent = L.all.length;
@@ -742,7 +742,8 @@ function renderList(L){
 /* ================= actions ================= */
 function setDepth(depth){
   if(!S.routeId) return;
-  var cur = depthFor(S.routeId), next = cur === depth ? null : depth;
+  var cur = depthFor(S.routeId), next = depth;
+  if(cur === next) return;
   store.put('snowDays', S.date + '__' + S.routeId, {date:S.date, routeId:S.routeId, depth:next, by:who(), at:Date.now()}).catch(fail);
   if(next && S.tab !== 'today'){ S.tab = 'today'; }
 }
@@ -1032,6 +1033,7 @@ $('routeTabs').addEventListener('click', function(e){
   S.routeId = b.dataset.route; lsSet('snowRoute', S.routeId); render();
 });
 $('depthSeg').addEventListener('click', function(e){ var b = e.target.closest('[data-depth]'); if(b) setDepth(b.dataset.depth); });
+$('depthNote').addEventListener('click', function(e){ if(e.target.id === 'clearDepth') setDepth(null); });
 $('listTabs').addEventListener('click', function(e){ var b = e.target.closest('[data-tab]'); if(!b) return; S.tab = b.dataset.tab; S.adjust = false; render(); });
 $('adjustBtn').onclick = function(){ S.adjust = !S.adjust; render(); };
 $('addClientBtn').onclick = function(){ clientDialog(null); };
